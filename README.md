@@ -2,28 +2,39 @@ word2vec-scala
 ==============
 
 
-A Scala implementation of the [word2vec](https://code.google.com/p/word2vec/) model representation.
+This is a Scala implementation of the [word2vec](https://code.google.com/p/word2vec/) toolkit's model representation.
 
-This interface allows the user to access the vector representations output by the word2vec tool, while
- also providing some common operations (e.g., word-distance and word-analogy).
+This interface allows the user to access the vectors representation output by
+the word2vec toolkit. It also implements example operations that can be done
+on the vectors (e.g., word-distance, word-analogy).
 
-Note that it does NOT implement the actual continuous bag-of-words and skip-gram architectures
-for computing the vectors.  You will still need to download and compile the original word2vec
-tool if you wish to train new vector models.
+Note that it does **NOT** implement the actual continuous bag-of-words and
+skip-gram architectures for computing the vectors.  You will still need to
+download and compile the original word2vec tool if you wish to train new models.
 
 
+## Includes
 
-### Loading model
+The included model (vectors.bin) was trained on the [text8](http://mattmahoney.net/dc/text8.zip) corpus, which contains
+the first 100 MB of the "clean" English Wikipedia corpus.  The following training parameters
+were used:
 
+```bash
+./word2vec -train text8 -output vectors.bin -cbow 0 -size 200 -window 5 -negative 0 -hs 1 -sample 1e-3 -threads 12 -binary 1
+```
+
+
+## Usage
+
+
+#### Load model
 ```scala
 val model = new Word2Vec()
 model.load("vectors.bin")
 ```
 
 
-
-### Distance
-
+#### Distance
 ```scala
 val results = model.distance(Set("france"), N = 10)
 model.pprint(results)
@@ -42,7 +53,6 @@ model.pprint(results)
                                             russia              0.543569
                                            hungary              0.519036
 ```
-
 
 ```scala
 model.pprint( model.distance(Set("color", "fire")) )
@@ -66,9 +76,7 @@ model.pprint( model.distance(Set("color", "fire")) )
 ```
 
 
-
-### Analogy
-
+#### Analogy
 ```scala
 model.pprint( model.analogy("king", "queen", "man", N = 10) )
 ```
@@ -86,4 +94,14 @@ model.pprint( model.analogy("king", "queen", "man", N = 10) )
                                              bride              0.413417
                                               lady              0.406856
 ```
+
+
+
+
+## Compatibility
+
+- **[09/2013]** The code was tested to work with models trained using revision
+[r33](http://word2vec.googlecode.com/svn/trunk/?p=33) of the word2vec toolkit.
+It should also work with future revisions, assuming that the output format does
+not change.
 
