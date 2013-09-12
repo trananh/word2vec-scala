@@ -216,9 +216,10 @@ class Word2Vec {
 
     // Iterate over each token in the vocab and compute its cosine score to the input.
     var dist = 0f
+    val inputSet = input.toSet[String]
     vocab.foreach(entry => {
       // Skip tokens that are in the input.
-      if (!input.contains(entry._1)) {
+      if (!inputSet.contains(entry._1)) {
         dist = cosine(vector, entry._2)
         top.enqueue((entry._1, dist))
         if (top.length > N) {
