@@ -26,17 +26,15 @@ were used:
 
 ## Usage
 
-
 #### Load model
 ```scala
 val model = new Word2Vec()
 model.load("vectors.bin")
 ```
 
-
 #### Distance
 ```scala
-val results = model.distance(Set("france"), N = 10)
+val results = model.distance(List("france"), N = 10)
 model.pprint(results)
 ```
 ```
@@ -55,26 +53,46 @@ model.pprint(results)
 ```
 
 ```scala
-model.pprint( model.distance(Set("color", "fire")) )
+model.pprint( model.distance(List("france", "usa")) )
 ```
 ```
                                               Word       Cosine distance
 ------------------------------------------------------------------------
-                                            colors              0.523039
-                                             light              0.521632
-                                            colour              0.513820
-                                              glow              0.512456
-                                             fires              0.507191
+                                       netherlands              0.691459
+                                       switzerland              0.672526
+                                           belgium              0.656425
+                                            canada              0.641793
+                                            russia              0.612469
                                                  .              .
                                                  .              .
                                                  .              .
-                                             burst              0.431774
-                                           stripes              0.431767
-                                          lighting              0.431510
-                                             infra              0.431126
-                                            purple              0.429750
+                                           croatia              0.451900
+                                            vantaa              0.450767
+                                            roissy              0.448256
+                                            norway              0.447392
+                                              cuba              0.446168
 ```
 
+```scala
+model.pprint( model.distance(List("france", "usa", "usa")) )
+```
+```
+                                              Word       Cosine distance
+------------------------------------------------------------------------
+                                            canada              0.631119
+                                       switzerland              0.626366
+                                       netherlands              0.621275
+                                            russia              0.569951
+                                           belgium              0.560368
+                                                 .              .
+                                                 .              .
+                                                 .              .
+                                             osaka              0.418143
+                                               eas              0.417097
+                                           antholz              0.415458
+                                           fukuoka              0.414105
+                                           zealand              0.413075
+```
 
 #### Analogy
 ```scala
@@ -96,12 +114,9 @@ model.pprint( model.analogy("king", "queen", "man", N = 10) )
 ```
 
 
-
-
 ## Compatibility
 
 - **[09/2013]** The code was tested to work with models trained using revision
 [r33](http://word2vec.googlecode.com/svn/trunk/?p=33) of the word2vec toolkit.
 It should also work with future revisions, assuming that the output format does
 not change.
-

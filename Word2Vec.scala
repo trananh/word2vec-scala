@@ -189,7 +189,7 @@ class Word2Vec {
     * @param N The maximum number of terms to return (default to 40).
     * @return The N closest terms in the vocab to the input word(s) and their associated cosine similarity scores.
     */
-  def distance(input: Set[String], N: Integer = 40): List[(String, Float)] = {
+  def distance(input: List[String], N: Integer = 40): List[(String, Float)] = {
     // Check for edge cases
     if (input.size == 0) return List[(String, Float)]()
     input.foreach(w => {
@@ -315,8 +315,9 @@ object Word2Vec {
     model.load("./vectors.bin")
 
     // distance: Find N closest words
-    model.pprint(model.distance(Set("france"), N = 10))
-    model.pprint(model.distance(Set("color", "fire")))
+    model.pprint(model.distance(List("france"), N = 10))
+    model.pprint(model.distance(List("france", "usa")))
+    model.pprint(model.distance(List("france", "usa", "usa")))
 
     // analogy: "king" is to "queen", as "man" is to ?
     model.pprint(model.analogy("king", "queen", "man", N = 10))
