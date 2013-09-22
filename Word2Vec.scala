@@ -85,7 +85,7 @@ class VecBinaryReader(val file: File) {
   * {{{
   * val model = new Word2Vec()
   * model.load("vectors.bin")
-  * val results = model.distance(Set("france"), N = 10)
+  * val results = model.distance(List("france"), N = 10)
   * 
   * model.pprint(results)
   * }}}
