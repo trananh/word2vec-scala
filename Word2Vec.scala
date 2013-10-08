@@ -38,11 +38,7 @@ class VecBinaryReader(val file: File) {
   private val dis = new DataInputStream(bis)
 
   /** Close the stream. */
-  def close() {
-    dis.close()
-    bis.close()
-    fis.close()
-  }
+  def close() { dis.close(); bis.close(); fis.close() }
 
   /** Read the next byte.
     * @return The next byte from the file.
@@ -107,14 +103,12 @@ class Word2Vec {
 
   /** Load data from a binary file.
     * @param filename Path to file containing word projections in the BINARY FORMAT.
+    * @param limit Maximum number of words to load from file (a.k.a. max vocab size).
+    * @param normalize Normalize the loaded vectors if true (default to true).
     */
-  def load(filename: String): Unit = load(new File(filename))
-
-  /** Load data from a binary file.
-    * @param file The file containing word projections in the BINARY FORMAT.
-    */
-  def load(file: File): Unit = {
+  def load(filename: String, limit: Integer = Int.MaxValue, normalize: Boolean = true): Unit = {
     // Check edge case
+    val file = new File(filename)
     if (!file.exists()) {
       throw new FileNotFoundException("Binary vector file not found <" + file.toString + ">")
     }
@@ -125,30 +119,27 @@ class Word2Vec {
     // Read header info
     numWords = Integer.parseInt(reader.readToken())
     vecSize = Integer.parseInt(reader.readToken())
+    println("\nFile contains " + numWords + " words with vector size " + vecSize)
 
     // Read the vocab words and their associated vector representations
     var word = ""
     val vector = new Array[Float](vecSize)
-    for (_ <- 0 until numWords) {
+    var normFactor = 1f
+    for (_ <- 0 until math.min(numWords, limit)) {
       // Read the word
       word = reader.readToken()
 
       // Read the vector representation (each vector contains vecSize number of floats)
-      var len = 0f
-      for (i <- 0 until vector.length) {
-        vector(i) = reader.readFloat()
-        len += (vector(i) * vector(i))
-      }
-
-      // Find the magnitude of the vector so we can normalize each value by the magnitude
-      len = Math.sqrt(len).asInstanceOf[Float]
+      for (i <- 0 until vector.length) vector(i) = reader.readFloat()
 
       // Store the normalized vector representation, keyed by the word
-      vocab.put(word, vector.map(_ / len))
+      normFactor = if (normalize) magnitude(vector).toFloat else 1f
+      vocab.put(word, vector.map(_ / normFactor) )
 
       // Eat up the next delimiter character
       reader.read()
     }
+    println("Loaded " + math.min(numWords, limit) + " words.\n")
 
     // Finally, close the reader
     reader.close()
@@ -162,16 +153,50 @@ class Word2Vec {
     vocab.get(word).isDefined
   }
 
-  /** Compute the cosine similarity score between two normalized vectors.
+  /** Get the vector representation for the word.
+    * @param word Word to retrieve vector for.
+    * @return The vector representation of the word.
+    */
+  def vector(word: String): Array[Float] = {
+    vocab.getOrElse(word, Array[Float]())
+  }
+
+  /** Compute the Euclidean distance between two vectors.
+    * @param vec1 The first vector.
+    * @param vec2 The other vector.
+    * @return The Euclidean distance between the two vectors.
+    */
+  private def euclidean(vec1: Array[Float], vec2: Array[Float]): Double = {
+    assert(vec1.length == vec2.length, "Uneven vectors!")
+    var sum = 0.0
+    for (i <- 0 until vec1.length) sum += math.pow(vec1(i) - vec2(i), 2)
+    math.sqrt(sum)
+  }
+
+  /** Compute the Euclidean distance between the vector representations of the words.
+    * @param word1 The first word.
+    * @param word2 The other word.
+    * @return The Euclidean distance between the vector representations of the words.
+    */
+  def euclidean(word1: String, word2: String): Double = {
+    assert(contains(word1) || contains(word2), "Out of dictionary word!")
+    euclidean(vocab.get(word1).get, vocab.get(word2).get)
+  }
+
+  /** Compute the cosine similarity score between two vectors.
     * @param vec1 The first vector.
     * @param vec2 The other vector.
     * @return The cosine similarity score of the two vectors.
     */
-  private def cosine(vec1: Array[Float], vec2: Array[Float]): Float = {
+  private def cosine(vec1: Array[Float], vec2: Array[Float]): Double = {
     assert(vec1.length == vec2.length, "Uneven vectors!")
-    var dist = 0f
-    for (i <- 0 until vec1.length) dist += (vec1(i) * vec2(i))
-    dist
+    var dot, sum1, sum2 = 0.0
+    for (i <- 0 until vec1.length) {
+      dot += (vec1(i) * vec2(i))
+      sum1 += (vec1(i) * vec1(i))
+      sum2 += (vec2(i) * vec2(i))
+    }
+    dot / (math.sqrt(sum1) * math.sqrt(sum2))
   }
 
   /** Compute the cosine similarity score between the vector representations of the words.
@@ -179,9 +204,66 @@ class Word2Vec {
     * @param word2 The other word.
     * @return The cosine similarity score between the vector representations of the words.
     */
-  def cosine(word1: String, word2: String): Float = {
+  def cosine(word1: String, word2: String): Double = {
     assert(contains(word1) || contains(word2))
     cosine(vocab.get(word1).get, vocab.get(word2).get)
+  }
+
+  /** Compute the magnitude of the vector.
+    * @param vec The vector.
+    * @return The magnitude of the vector.
+    */
+  def magnitude(vec: Array[Float]): Double = {
+    math.sqrt(vec.foldLeft(0.0){(sum, x) => sum + (x * x)})
+  }
+
+  /** Normalize the vector.
+    * @param vec The vector.
+    * @return A normalized vector.
+    */
+  def normalize(vec: Array[Float]): Array[Float] = {
+    val mag = magnitude(vec).toFloat
+    vec.map(_ / mag)
+  }
+
+  /** Find N closest terms in the vocab to the given vector, using only words from the in-set (if defined)
+    * and excluding all words from the out-set (if non-empty).  Although you can, it doesn't make much
+    * sense to define both in and out sets.
+    * @param vector The vector.
+    * @param inSet Set of words to consider. Specify None to use all words in the vocab (default behavior).
+    * @param outSet Set of words to exclude (default to empty).
+    * @param N The maximum number of terms to return (default to 40).
+    * @return The N closest terms in the vocab to the given vector and their associated cosine similarity scores.
+    */
+  def nearestNeighbors(vector: Array[Float], inSet: Option[Set[String]] = None,
+                       outSet: Set[String] = Set[String](), N: Integer = 40)
+  : List[(String, Float)] = {
+    // For performance efficiency, we maintain the top/closest terms using a priority queue.
+    // Note: We invert the distance here because a priority queue will dequeue the highest priority element,
+    //       but we would like it to dequeue the lowest scoring element instead.
+    val top = new mutable.PriorityQueue[(String, Float)]()(Ordering.by(-_._2))
+
+    // Iterate over each token in the vocab and compute its cosine score to the input.
+    var dist = 0f
+    val iterator = if (inSet.isDefined) vocab.filterKeys(k => inSet.get.contains(k)).iterator else vocab.iterator
+    iterator.foreach(entry => {
+      // Skip tokens in the out set
+      if (!outSet.contains(entry._1)) {
+        dist = cosine(vector, entry._2).toFloat
+        if (top.size < N || top.head._2 < dist) {
+          top.enqueue((entry._1, dist))
+          if (top.length > N) {
+            // If the queue contains over N elements, then dequeue the highest priority element
+            // (which will be the element with the lowest cosine score).
+            top.dequeue()
+          }
+        }
+      }
+    })
+
+    // Return the top N results as a sorted list.
+    assert(top.length <= N)
+    top.toList.sortWith(_._2 > _._2)
   }
 
   /** Find the N closest terms in the vocab to the input word(s).
@@ -203,36 +285,7 @@ class Word2Vec {
     val vector = new Array[Float](vecSize)
     input.foreach(w => for (j <- 0 until vector.length) vector(j) += vocab.get(w).get(j))
 
-    // Normalize the vector representation of the input.
-    var len = 0f
-    for (i <- 0 until vector.length) len += (vector(i) * vector(i))
-    len = Math.sqrt(len).asInstanceOf[Float]
-    for (i <- 0 until vector.length) vector(i) /= len
-
-    // Maintain the top/closest terms using a priority queue, ordered by the cosine similarity score.
-    // Note: We invert the distance here because a priority queue will dequeue the highest priority element,
-    //       but we would like it to dequeue the lowest scoring element instead.
-    val top = new mutable.PriorityQueue[(String, Float)]()(Ordering.by(-_._2))
-
-    // Iterate over each token in the vocab and compute its cosine score to the input.
-    var dist = 0f
-    val inputSet = input.toSet[String]
-    vocab.foreach(entry => {
-      // Skip tokens that are in the input.
-      if (!inputSet.contains(entry._1)) {
-        dist = cosine(vector, entry._2)
-        top.enqueue((entry._1, dist))
-        if (top.length > N) {
-          // If the queue contains over N elements, then dequeue the highest priority element
-          // (which will be the element with the lowest cosine score).
-          top.dequeue()
-        }
-      }
-    })
-
-    // Return the top N results as a sorted list.
-    assert(top.length <= N)
-    top.toList.sortWith(_._2 > _._2)
+    nearestNeighbors(normalize(vector), outSet = input.toSet, N = N)
   }
 
   /** Find the N closest terms in the vocab to the analogy:
@@ -261,35 +314,25 @@ class Word2Vec {
     for (j <- 0 until vector.length)
       vector(j) = vocab.get(word2).get(j) - vocab.get(word1).get(j) + vocab.get(word3).get(j)
 
-    // Normalize the vector representation.
-    var len = 0f
-    for (i <- 0 until vector.length) len += (vector(i) * vector(i))
-    len = Math.sqrt(len).asInstanceOf[Float]
-    for (i <- 0 until vector.length) vector(i) /= len
+    nearestNeighbors(normalize(vector), outSet = Set(word1, word2, word3), N = N)
+  }
 
-    // Maintain the top/closest terms using a priority queue, ordered by the cosine similarity score.
-    // Note: We invert the distance here because a priority queue will dequeue the highest priority element,
-    //       but we would like it to dequeue the lowest scoring element instead.
-    val top = new mutable.PriorityQueue[(String, Float)]()(Ordering.by(-_._2))
-
-    // Iterate over each token in the vocab and compute its cosine score to the input.
-    var dist = 0f
-    vocab.foreach(entry => {
-      // Skip tokens that are in the input.
-      if (!word1.equals(entry._1) && !word2.equals(entry._1) && !word3.equals(entry._1)) {
-        dist = cosine(vector, entry._2)
-        top.enqueue((entry._1, dist))
-        if (top.length > N) {
-          // If the queue contains over N elements, then dequeue the highest priority element
-          // (which will be the element with the lowest cosine score).
-          top.dequeue()
-        }
+  /** Rank a set of words by their respective distance to some central term.
+    * @param word The central word.
+    * @param set Set of words to rank.
+    * @return Ordered list of words and their associated scores.
+    */
+  def rank(word: String, set: Set[String]): List[(String, Float)] = {
+    // Check for edge cases
+    if (set.size == 0) return List[(String, Float)]()
+    (set + word).foreach(w => {
+      if (!contains(w)) {
+        println("Out of dictionary word!")
+        return List[(String, Float)]()
       }
     })
 
-    // Return the top N results as a sorted list.
-    assert(top.length <= N)
-    top.toList.sortWith(_._2 > _._2)
+    nearestNeighbors(vocab.get(word).get, inSet = Option(set), N = set.size)
   }
 
   /** Pretty print the list of words and their associated scores.
@@ -307,13 +350,13 @@ class Word2Vec {
   * Demo of the Scala ported word2vec model.
   * ********************************************************************************
   */
-object Word2Vec {
+object RunWord2Vec {
 
   /** Demo. */
   def main(args: Array[String]) {
     // Load word2vec model from binary file.
     val model = new Word2Vec()
-    model.load("./vectors.bin")
+    model.load("../word2vec-scala/vectors.bin")
 
     // distance: Find N closest words
     model.pprint(model.distance(List("france"), N = 10))
@@ -322,6 +365,9 @@ object Word2Vec {
 
     // analogy: "king" is to "queen", as "man" is to ?
     model.pprint(model.analogy("king", "queen", "man", N = 10))
+
+    // rank: Rank a set of words by their respective distance to the central term
+    model.pprint(model.rank("apple", Set("orange", "soda", "lettuce")))
   }
 
 }

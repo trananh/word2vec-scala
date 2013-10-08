@@ -32,7 +32,7 @@ val model = new Word2Vec()
 model.load("vectors.bin")
 ```
 
-#### Distance
+#### Distance - Find N best matches
 ```scala
 val results = model.distance(List("france"), N = 10)
 model.pprint(results)
@@ -94,7 +94,7 @@ model.pprint( model.distance(List("france", "usa", "usa")) )
                                            zealand              0.413075
 ```
 
-#### Analogy
+#### Analogy - King is to Queen, as Man is to ???
 ```scala
 model.pprint( model.analogy("king", "queen", "man", N = 10) )
 ```
@@ -111,6 +111,18 @@ model.pprint( model.analogy("king", "queen", "man", N = 10) )
                                             beauty              0.421060
                                              bride              0.413417
                                               lady              0.406856
+```
+
+#### Ranking - Rank a set of words by their respective distance to search term
+```scala
+model.pprint( model.rank("apple", Set("orange", "soda", "lettuce")) )
+```
+```
+                                              Word       Cosine distance
+------------------------------------------------------------------------
+                                            orange              0.203808
+                                           lettuce              0.132007
+                                              soda              0.075649
 ```
 
 
