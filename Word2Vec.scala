@@ -166,7 +166,7 @@ class Word2Vec {
     * @param vec2 The other vector.
     * @return The Euclidean distance between the two vectors.
     */
-  private def euclidean(vec1: Array[Float], vec2: Array[Float]): Double = {
+  def euclidean(vec1: Array[Float], vec2: Array[Float]): Double = {
     assert(vec1.length == vec2.length, "Uneven vectors!")
     var sum = 0.0
     for (i <- 0 until vec1.length) sum += math.pow(vec1(i) - vec2(i), 2)
@@ -188,7 +188,7 @@ class Word2Vec {
     * @param vec2 The other vector.
     * @return The cosine similarity score of the two vectors.
     */
-  private def cosine(vec1: Array[Float], vec2: Array[Float]): Double = {
+  def cosine(vec1: Array[Float], vec2: Array[Float]): Double = {
     assert(vec1.length == vec2.length, "Uneven vectors!")
     var dot, sum1, sum2 = 0.0
     for (i <- 0 until vec1.length) {
@@ -224,6 +224,19 @@ class Word2Vec {
   def normalize(vec: Array[Float]): Array[Float] = {
     val mag = magnitude(vec).toFloat
     vec.map(_ / mag)
+  }
+
+  /** Find the vector representation for the given list of word(s) by aggregating (summing) the
+    * vector for each word.
+    * @param input The input word(s).
+    * @return The sum vector (aggregated from the input vectors).
+    */
+  def sumVector(input: List[String]): Array[Float] = {
+    // Find the vector representation for the input. If multiple words, then aggregate (sum) their vectors.
+    input.foreach(w => assert(contains(w), "Out of dictionary word!"))
+    val vector = new Array[Float](vecSize)
+    input.foreach(w => for (j <- 0 until vector.length) vector(j) += vocab.get(w).get(j))
+    vector
   }
 
   /** Find N closest terms in the vocab to the given vector, using only words from the in-set (if defined)
@@ -282,8 +295,7 @@ class Word2Vec {
     })
 
     // Find the vector representation for the input. If multiple words, then aggregate (sum) their vectors.
-    val vector = new Array[Float](vecSize)
-    input.foreach(w => for (j <- 0 until vector.length) vector(j) += vocab.get(w).get(j))
+    val vector = sumVector(input)
 
     nearestNeighbors(normalize(vector), outSet = input.toSet, N = N)
   }
