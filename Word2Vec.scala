@@ -145,6 +145,23 @@ class Word2Vec {
     reader.close()
   }
 
+  /** Return the number of words in the vocab.
+    * @return Number of words in the vocab.
+    */
+  def wordsCount: Int = numWords
+
+  /** Size of the vectors.
+    * @return Size of the vectors.
+    */
+  def vectorSize: Int = vecSize
+
+  /** Clear internal data. */
+  def clear() {
+    vocab.clear()
+    numWords = 0
+    vecSize = 0
+  }
+
   /** Check if the word is present in the vocab map.
     * @param word Word to be checked.
     * @return True if the word is in the vocab map.
