@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import java.io._
+import scala.Array
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
@@ -196,7 +197,7 @@ class Word2Vec {
     * @return The Euclidean distance between the vector representations of the words.
     */
   def euclidean(word1: String, word2: String): Double = {
-    assert(contains(word1) || contains(word2), "Out of dictionary word!")
+    assert(contains(word1) && contains(word2), "Out of dictionary word! " + word1 + " or " + word2)
     euclidean(vocab.get(word1).get, vocab.get(word2).get)
   }
 
@@ -222,7 +223,7 @@ class Word2Vec {
     * @return The cosine similarity score between the vector representations of the words.
     */
   def cosine(word1: String, word2: String): Double = {
-    assert(contains(word1) || contains(word2))
+    assert(contains(word1) && contains(word2), "Out of dictionary word! " + word1 + " or " + word2)
     cosine(vocab.get(word1).get, vocab.get(word2).get)
   }
 
@@ -250,7 +251,7 @@ class Word2Vec {
     */
   def sumVector(input: List[String]): Array[Float] = {
     // Find the vector representation for the input. If multiple words, then aggregate (sum) their vectors.
-    input.foreach(w => assert(contains(w), "Out of dictionary word!"))
+    input.foreach(w => assert(contains(w), "Out of dictionary word! " + w))
     val vector = new Array[Float](vecSize)
     input.foreach(w => for (j <- 0 until vector.length) vector(j) += vocab.get(w).get(j))
     vector
@@ -306,7 +307,7 @@ class Word2Vec {
     if (input.size == 0) return List[(String, Float)]()
     input.foreach(w => {
       if (!contains(w)) {
-        println("Out of dictionary word!")
+        println("Out of dictionary word! " + w)
         return List[(String, Float)]()
       }
     })
@@ -334,7 +335,7 @@ class Word2Vec {
   def analogy(word1: String, word2: String, word3: String, N: Integer = 40): List[(String, Float)] = {
     // Check for edge cases
     if (!contains(word1) || !contains(word2) || !contains(word3)) {
-      println("Out of dictionary word!")
+      println("Out of dictionary word! " + Array(word1, word2, word3).mkString(" or "))
       return List[(String, Float)]()
     }
 
@@ -356,7 +357,7 @@ class Word2Vec {
     if (set.size == 0) return List[(String, Float)]()
     (set + word).foreach(w => {
       if (!contains(w)) {
-        println("Out of dictionary word!")
+        println("Out of dictionary word! " + w)
         return List[(String, Float)]()
       }
     })
