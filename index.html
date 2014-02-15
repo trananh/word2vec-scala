@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Word2vec-scala : Scala port of the word2vec toolkit." />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Word2vec-scala</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/trananh/word2vec-scala">View on GitHub</a>
+
+          <h1 id="project_title">Word2vec-scala</h1>
+          <h2 id="project_tagline">Scala port of the word2vec toolkit.</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/trananh/word2vec-scala/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/trananh/word2vec-scala/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a name="word2vec-scala" class="anchor" href="#word2vec-scala"><span class="octicon octicon-link"></span></a>word2vec-scala</h1>
+
+<p>This is a Scala implementation of the <a href="https://code.google.com/p/word2vec/">word2vec</a> toolkit's model representation.</p>
+
+<p>This interface allows the user to access the vectors representation output by
+the word2vec toolkit. It also implements example operations that can be done
+on the vectors (e.g., word-distance, word-analogy).</p>
+
+<p>Note that it does <strong>NOT</strong> implement the actual continuous bag-of-words and
+skip-gram architectures for computing the vectors.  You will still need to
+download and compile the original word2vec tool if you wish to train new models.</p>
+
+<h2>
+<a name="includes" class="anchor" href="#includes"><span class="octicon octicon-link"></span></a>Includes</h2>
+
+<p>The included model (vectors.bin) was trained on the <a href="http://mattmahoney.net/dc/text8.zip">text8</a> corpus, which contains
+the first 100 MB of the "clean" English Wikipedia corpus.  The following training parameters
+were used:</p>
+
+<div class="highlight highlight-bash"><pre>./word2vec -train text8 -output vectors.bin -cbow 0 -size 200 -window 5 -negative 0 -hs 1 -sample 1e-3 -threads 12 -binary 1
+</pre></div>
+
+<h2>
+<a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h2>
+
+<h4>
+<a name="load-model" class="anchor" href="#load-model"><span class="octicon octicon-link"></span></a>Load model</h4>
+
+<div class="highlight highlight-scala"><pre><span class="k">val</span> <span class="n">model</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">Word2Vec</span><span class="o">()</span>
+<span class="n">model</span><span class="o">.</span><span class="n">load</span><span class="o">(</span><span class="s">"vectors.bin"</span><span class="o">)</span>
+</pre></div>
+
+<h4>
+<a name="distance---find-n-best-matches" class="anchor" href="#distance---find-n-best-matches"><span class="octicon octicon-link"></span></a>Distance - Find N best matches</h4>
+
+<div class="highlight highlight-scala"><pre><span class="k">val</span> <span class="n">results</span> <span class="k">=</span> <span class="n">model</span><span class="o">.</span><span class="n">distance</span><span class="o">(</span><span class="nc">List</span><span class="o">(</span><span class="s">"france"</span><span class="o">),</span> <span class="n">N</span> <span class="k">=</span> <span class="mi">10</span><span class="o">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">pprint</span><span class="o">(</span><span class="n">results</span><span class="o">)</span>
+</pre></div>
+
+<pre><code>                                              Word       Cosine distance
+------------------------------------------------------------------------
+                                           belgium              0.706633
+                                             spain              0.672767
+                                       netherlands              0.668178
+                                             italy              0.616545
+                                       switzerland              0.595572
+                                        luxembourg              0.591839
+                                          portugal              0.564891
+                                           germany              0.549196
+                                            russia              0.543569
+                                           hungary              0.519036
+</code></pre>
+
+<div class="highlight highlight-scala"><pre><span class="n">model</span><span class="o">.</span><span class="n">pprint</span><span class="o">(</span> <span class="n">model</span><span class="o">.</span><span class="n">distance</span><span class="o">(</span><span class="nc">List</span><span class="o">(</span><span class="s">"france"</span><span class="o">,</span> <span class="s">"usa"</span><span class="o">))</span> <span class="o">)</span>
+</pre></div>
+
+<pre><code>                                              Word       Cosine distance
+------------------------------------------------------------------------
+                                       netherlands              0.691459
+                                       switzerland              0.672526
+                                           belgium              0.656425
+                                            canada              0.641793
+                                            russia              0.612469
+                                                 .              .
+                                                 .              .
+                                                 .              .
+                                           croatia              0.451900
+                                            vantaa              0.450767
+                                            roissy              0.448256
+                                            norway              0.447392
+                                              cuba              0.446168
+</code></pre>
+
+<div class="highlight highlight-scala"><pre><span class="n">model</span><span class="o">.</span><span class="n">pprint</span><span class="o">(</span> <span class="n">model</span><span class="o">.</span><span class="n">distance</span><span class="o">(</span><span class="nc">List</span><span class="o">(</span><span class="s">"france"</span><span class="o">,</span> <span class="s">"usa"</span><span class="o">,</span> <span class="s">"usa"</span><span class="o">))</span> <span class="o">)</span>
+</pre></div>
+
+<pre><code>                                              Word       Cosine distance
+------------------------------------------------------------------------
+                                            canada              0.631119
+                                       switzerland              0.626366
+                                       netherlands              0.621275
+                                            russia              0.569951
+                                           belgium              0.560368
+                                                 .              .
+                                                 .              .
+                                                 .              .
+                                             osaka              0.418143
+                                               eas              0.417097
+                                           antholz              0.415458
+                                           fukuoka              0.414105
+                                           zealand              0.413075
+</code></pre>
+
+<h4>
+<a name="analogy---king-is-to-queen-as-man-is-to-" class="anchor" href="#analogy---king-is-to-queen-as-man-is-to-"><span class="octicon octicon-link"></span></a>Analogy - King is to Queen, as Man is to ???</h4>
+
+<div class="highlight highlight-scala"><pre><span class="n">model</span><span class="o">.</span><span class="n">pprint</span><span class="o">(</span> <span class="n">model</span><span class="o">.</span><span class="n">analogy</span><span class="o">(</span><span class="s">"king"</span><span class="o">,</span> <span class="s">"queen"</span><span class="o">,</span> <span class="s">"man"</span><span class="o">,</span> <span class="n">N</span> <span class="k">=</span> <span class="mi">10</span><span class="o">)</span> <span class="o">)</span>
+</pre></div>
+
+<pre><code>                                              Word       Cosine distance
+------------------------------------------------------------------------
+                                             woman              0.547376
+                                              girl              0.509787
+                                              baby              0.473137
+                                            spider              0.450589
+                                              love              0.433065
+                                        prostitute              0.433034
+                                             loves              0.422127
+                                            beauty              0.421060
+                                             bride              0.413417
+                                              lady              0.406856
+</code></pre>
+
+<h4>
+<a name="ranking---rank-a-set-of-words-by-their-respective-distance-to-search-term" class="anchor" href="#ranking---rank-a-set-of-words-by-their-respective-distance-to-search-term"><span class="octicon octicon-link"></span></a>Ranking - Rank a set of words by their respective distance to search term</h4>
+
+<div class="highlight highlight-scala"><pre><span class="n">model</span><span class="o">.</span><span class="n">pprint</span><span class="o">(</span> <span class="n">model</span><span class="o">.</span><span class="n">rank</span><span class="o">(</span><span class="s">"apple"</span><span class="o">,</span> <span class="nc">Set</span><span class="o">(</span><span class="s">"orange"</span><span class="o">,</span> <span class="s">"soda"</span><span class="o">,</span> <span class="s">"lettuce"</span><span class="o">))</span> <span class="o">)</span>
+</pre></div>
+
+<pre><code>                                              Word       Cosine distance
+------------------------------------------------------------------------
+                                            orange              0.203808
+                                           lettuce              0.132007
+                                              soda              0.075649
+</code></pre>
+
+<h2>
+<a name="compatibility" class="anchor" href="#compatibility"><span class="octicon octicon-link"></span></a>Compatibility</h2>
+
+<ul>
+<li>
+<strong>[09/2013]</strong> The code was tested to work with models trained using revision
+<a href="http://word2vec.googlecode.com/svn/trunk/?p=33">r33</a> of the word2vec toolkit.
+It should also work with future revisions, assuming that the output format does
+not change.</li>
+</ul>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Word2vec-scala maintained by <a href="https://github.com/trananh">trananh</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
