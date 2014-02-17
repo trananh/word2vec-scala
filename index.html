@@ -1,55 +1,56 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-
   <head>
-    <meta charset='utf-8' />
-    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="word2vec-scala : Scala port of the word2vec toolkit." />
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>word2vec-scala by trananh</title>
 
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
-
-    <title>word2vec-scala</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
   </head>
-
   <body>
+    <div class="wrapper">
+      <header>
+        <h1 class="header">word2vec-scala</h1>
+        <p class="header">Scala port of the word2vec toolkit.</p>
 
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/trananh/word2vec-scala">View on GitHub</a>
+        <ul>
+          <li class="download"><a class="buttons" href="https://github.com/trananh/word2vec-scala/zipball/master">Download ZIP</a></li>
+          <li class="download"><a class="buttons" href="https://github.com/trananh/word2vec-scala/tarball/master">Download TAR</a></li>
+          <li><a class="buttons github" href="https://github.com/trananh/word2vec-scala">View On GitHub</a></li>
+        </ul>
 
-          <h1 id="project_title">word2vec-scala</h1>
-          <h2 id="project_tagline">Scala port of the word2vec toolkit.</h2>
+        <p class="header">This project is maintained by <a class="header name" href="https://github.com/trananh">trananh</a></p>
 
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/trananh/word2vec-scala/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/trananh/word2vec-scala/tarball/master">Download this project as a tar.gz file</a>
-            </section>
-        </header>
-    </div>
 
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
+      </header>
+      <section>
         <h1>
 <a name="word2vec-scala" class="anchor" href="#word2vec-scala"><span class="octicon octicon-link"></span></a>word2vec-scala</h1>
 
-<p>This is a Scala implementation of the <a href="https://code.google.com/p/word2vec/">word2vec</a> toolkit's model representation.</p>
+<p>This is a Scala implementation of the <a href="https://code.google.com/p/word2vec/">word2vec</a>
+toolkit's model representation.</p>
 
-<p>This interface allows the user to access the vectors representation output by
-the word2vec toolkit. It also implements example operations that can be done
+<p>This Scala interface allows the user to access the vector representation output
+by the word2vec toolkit. It also implements example operations that can be done
 on the vectors (e.g., word-distance, word-analogy).</p>
 
-<p>Note that it does <strong>NOT</strong> implement the actual continuous bag-of-words and
-skip-gram architectures for computing the vectors.  You will still need to
-download and compile the original word2vec tool if you wish to train new models.</p>
+<p>Note that it does <strong>NOT</strong> implement the actual training algorithms.  You will
+still need to download and compile the original word2vec tool if you wish to
+train new models.</p>
 
 <h2>
 <a name="includes" class="anchor" href="#includes"><span class="octicon octicon-link"></span></a>Includes</h2>
 
-<p>The included model (vectors.bin) was trained on the <a href="http://mattmahoney.net/dc/text8.zip">text8</a> corpus, which contains
-the first 100 MB of the "clean" English Wikipedia corpus.  The following training parameters
-were used:</p>
+<p>The included model (vectors.bin) was trained on the
+<a href="http://mattmahoney.net/dc/text8.zip">text8</a> corpus, which contains
+the first 100 MB of the "clean" English Wikipedia corpus.  The following
+training parameters were used:</p>
 
 <div class="highlight highlight-bash"><pre>./word2vec -train text8 -output vectors.bin -cbow 0 -size 200 -window 5 -negative 0 -hs 1 -sample 1e-3 -threads 12 -binary 1
 </pre></div>
@@ -169,17 +170,12 @@ It should also work with future revisions, assuming that the output format does
 not change.</li>
 </ul>
       </section>
-    </div>
-
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">word2vec-scala maintained by <a href="https://github.com/trananh">trananh</a></p>
-        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      <footer>
+        <p><small>Hosted on <a href="http://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
       </footer>
     </div>
-
-              <script type="text/javascript">
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+		          <script type="text/javascript">
             var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
             document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
           </script>
@@ -189,7 +185,6 @@ not change.</li>
             pageTracker._trackPageview();
             } catch(err) {}
           </script>
-
 
   </body>
 </html>
