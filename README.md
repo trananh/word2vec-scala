@@ -2,15 +2,16 @@ word2vec-scala
 ==============
 
 
-This is a Scala implementation of the [word2vec](https://code.google.com/p/word2vec/) toolkit's model representation.
+This is a Scala implementation of the [word2vec](https://code.google.com/p/word2vec/)
+toolkit's model representation.
 
-This interface allows the user to access the vectors representation output by
-the word2vec toolkit. It also implements example operations that can be done
+This Scala interface allows the user to access the vector representation output
+by the word2vec toolkit. It also implements example operations that can be done
 on the vectors (e.g., word-distance, word-analogy).
 
-Note that it does **NOT** implement the actual continuous bag-of-words and
-skip-gram architectures for computing the vectors.  You will still need to
-download and compile the original word2vec tool if you wish to train new models.
+Note that it does **NOT** implement the actual training algorithms.  You will
+still need to download and compile the original word2vec tool if you wish to
+train new models.
 
 
 ## Includes
